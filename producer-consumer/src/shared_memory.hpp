@@ -1,43 +1,53 @@
+#include "messages.hpp"
 #include "session.hpp"
 #include <fcntl.h>
+#include <filesystem>
+#include <fstream>
+#include <sys/ipc.h>
 #include <sys/mman.h>
+#include <sys/shm.h>
 #include <unistd.h>
 
 class SharedMemory
 {
 public:
-    SharedMemory() : semaphore_(std::make_shared<Semaphore>(SEMAPHORE_NAME))
+    SharedMemory(int size) : semaphore_(std::make_shared<Semaphore>(SEMAPHORE_NAME))
     {
-        shm_fd_ = shm_open(SHARED_MEMORY_NAME, O_RDWR | O_CREAT, 0666);
+        std::ofstream{SHARED_MEMORY_NAME};
+
+        const auto key = ftok(SHARED_MEMORY_NAME, 652);
+        if (key == -1)
+        {
+            throw std::runtime_error("Не удалось создать уникальный ключ");
+        }
+
+        shm_fd_ = shmget(key, sizeof(StoredMessages), 0666 | IPC_CREAT);
         if (shm_fd_ == -1)
         {
             throw std::runtime_error("Не удалось открыть объект разделяемой памяти");
         }
 
-        ftruncate(shm_fd_, SHARED_MEMORY_SIZE);
-
         // Отображение разделяемой памяти в адресное пространство процесса
-        auto memory = mmap(0, SHARED_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_, 0);
-
+        auto memory = shmat(shm_fd_, nullptr, 0);
         if (memory == MAP_FAILED)
         {
             throw std::runtime_error("Не удалось отобразить разделяемую память");
         }
 
-        stored_messages_ = reinterpret_cast<StoredMessages *>(memory);
+        messages_ = reinterpret_cast<StoredMessages *>(memory);
     }
 
     ~SharedMemory()
     {
-        shm_unlink(SHARED_MEMORY_NAME);
-        munmap(stored_messages_, SHARED_MEMORY_SIZE);
-        close(shm_fd_);
+        std::filesystem::remove(SHARED_MEMORY_NAME);
+        shmdt(messages_);
+        shmctl(shm_fd_, IPC_RMID, nullptr);
     }
 
-    Session OpenSession() { return Session(stored_messages_, semaphore_); }
+    Session OpenSession() { return Session(messages_, semaphore_); }
 
 private:
-    StoredMessages *stored_messages_;
+    StoredMessages *messages_;
     int shm_fd_{-1};
     SemaphorePtr semaphore_;
 };

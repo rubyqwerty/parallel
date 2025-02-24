@@ -29,6 +29,8 @@ public:
         }
         std::filesystem::create_directory(protocol_dir);
 
+        queue_protocol_.open(std::filesystem::path(protocol_dir) / "queue");
+
         // Слушаем сигналы, оповещающие о появлении заказа
         sigemptyset(&set_);
         sigaddset(&set_, SIGUSR1);
@@ -95,7 +97,8 @@ private:
             {
                 protocol << added_mes << std::endl;
             }
-            std::cout << mes << std::endl;
+            std::cout << "Новая заявка: " << mes << std::endl;
+            queue_protocol_ << "Новая заявка: " << mes << std::endl;
 
             killpg(parent_pid_, SIGUSR1);
         }
@@ -115,16 +118,16 @@ private:
 
             while (auto mes = queue_.Pop(station.type))
             {
-                std::cout << mes.value() << std::endl;
+                std::cout << "ID Station: " << station.id << " --> " << mes.value() << std::endl;
+                queue_protocol_ << "ID Station: " << station.id << " --> " << mes.value() << std::endl;
 
                 const auto time = GetRandomTime(station.handle);
                 std::this_thread::sleep_for(std::chrono::milliseconds(time));
                 mes->status = PROCESSED;
 
-                std::cout << mes.value() << std::endl;
-                protocol << mes.value() << std::endl;
-
-                queue_.UpdateStatus(mes.value());
+                std::cout << "ID Station: " << station.id << " --> " << mes.value() << std::endl;
+                protocol << "ID Station: " << station.id << " --> " << mes.value() << std::endl;
+                queue_protocol_ << "ID Station: " << station.id << " --> " << mes.value() << std::endl;
             }
         }
     }
@@ -150,6 +153,8 @@ private:
 
     std::thread thread_;
     std::vector<pid_t> processes_{};
+
+    std::ofstream queue_protocol_;
 
 private:
     Settings settings_;

@@ -67,7 +67,6 @@ inline std::ostream &operator<<(std::ostream &out, const Message &mes)
 struct StoredMessages
 {
     int current_size{0};
-    int capacity{0};
     Message messages[SHARED_MEMORY_SIZE];
 };
 

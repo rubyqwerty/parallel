@@ -14,6 +14,7 @@ struct Params
 
 struct Station
 {
+    int id;
     GasType type;
     Params handle;
 };
@@ -26,7 +27,7 @@ struct Settings
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Params, mean, stddev);
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Station, type, handle);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Station, id, type, handle);
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(Settings, stations_params, create, number_message_queue);
 
 inline std::optional<Settings> GetSettings(const std::string &path)
