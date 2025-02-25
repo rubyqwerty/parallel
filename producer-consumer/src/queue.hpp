@@ -16,13 +16,13 @@ public:
     {
         auto session = shared_.OpenSession();
 
-        if (session.GetMessages()->current_size >= capacity_)
+        if (*session.GetMessages()->current_size >= capacity_)
         {
             elem.status = REJECTED;
             return elem;
         }
 
-        session.GetMessages()->messages[session.GetMessages()->current_size++] = elem;
+        session.GetMessages()->messages[(*session.GetMessages()->current_size)++] = elem;
 
         return elem;
     }
@@ -31,7 +31,7 @@ public:
     {
         auto session = shared_.OpenSession();
         auto messages = session.GetMessages();
-        for (auto i = 0; i < messages->current_size; ++i)
+        for (auto i = 0; i < *messages->current_size; ++i)
         {
             if (messages->messages[i].gas_type == type && messages->messages[i].status == EXPECTED)
             {
@@ -46,13 +46,13 @@ public:
     }
 
 private:
-    void Remove(Message *mes, int index, int &size)
+    void Remove(Message *mes, int index, int *size)
     {
-        for (auto i = index; i < size; ++i)
+        for (auto i = index; i < *size; ++i)
         {
             mes[i] = mes[i + 1];
         }
-        size--;
+        (*size)--;
     }
 
 private:

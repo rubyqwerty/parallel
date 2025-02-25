@@ -21,7 +21,7 @@ public:
             throw std::runtime_error("Не удалось создать уникальный ключ");
         }
 
-        shm_fd_ = shmget(key, sizeof(StoredMessages), 0666 | IPC_CREAT);
+        shm_fd_ = shmget(key, sizeof(Message) * size + sizeof(int) + 1, 0666 | IPC_CREAT);
         if (shm_fd_ == -1)
         {
             throw std::runtime_error("Не удалось открыть объект разделяемой памяти");
@@ -34,20 +34,25 @@ public:
             throw std::runtime_error("Не удалось отобразить разделяемую память");
         }
 
-        messages_ = reinterpret_cast<StoredMessages *>(memory);
+        int *size_queue = reinterpret_cast<int *>(memory);
+
+        *size_queue = 0;
+        Message *messages = reinterpret_cast<Message *>(size_queue + 1);
+
+        messages_ = StoredMessages{size_queue, messages};
     }
 
     ~SharedMemory()
     {
         std::filesystem::remove(SHARED_MEMORY_NAME);
-        shmdt(messages_);
+        shmdt(messages_.current_size);
         shmctl(shm_fd_, IPC_RMID, nullptr);
     }
 
-    Session OpenSession() { return Session(messages_, semaphore_); }
+    Session OpenSession() { return Session(&messages_, semaphore_); }
 
 private:
-    StoredMessages *messages_;
+    StoredMessages messages_;
     int shm_fd_{-1};
     SemaphorePtr semaphore_;
 };
