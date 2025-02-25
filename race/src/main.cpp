@@ -48,8 +48,50 @@ int main()
 
     auto screen = ScreenInteractive::Fullscreen();
 
+    std::vector<std::string> headers = {"Машина 1", "Машина 2", "Машина 3", "Машина 4", "Машина 5"};
+
+    std::vector<std::vector<int>> all_results{};
+
+    auto renderTable = [&]
+    {
+        const auto results = race.GetAllResults();
+
+        Elements rows;
+        // Заголовки
+        Elements header_row;
+        header_row.push_back(text("Этап") | border | center | size(WIDTH, EQUAL, 12));
+        for (const auto &header : headers)
+        {
+            header_row.push_back(text(header) | border | center | size(WIDTH, EQUAL, 12));
+        }
+        rows.push_back(hbox(std::move(header_row)));
+
+        // Данные таблицы
+        for (size_t i = 0; i < results.size(); ++i)
+        {
+            Elements row;
+
+            if (std::find(results[i].begin(), results[i].end(), -1) != results[i].end())
+                continue;
+
+            row.push_back(text((i != 3 ? "Этап " + std::to_string(i + 1) : "Итог ")) | border | center |
+                          size(WIDTH, EQUAL, 12));
+
+            for (size_t j = 0; j < results[i].size(); ++j)
+            {
+
+                row.push_back(
+                    text((std::to_string(results[i][j]) != "-1" ? std::to_string(results[i][j]) + " место" : "")) |
+                    border | center | size(WIDTH, EQUAL, 12));
+            }
+            rows.push_back(hbox(std::move(row)));
+        }
+
+        return vbox(rows);
+    };
+
     auto component = Renderer(
-        [&race]
+        [&]
         {
             const auto results = race.GetResult();
 
@@ -84,7 +126,8 @@ int main()
                          hbox({text("Машина 5: ") | color(Color::Blue) | bold | center,
                                gauge(positions[4]) | color(Color::Red) | border | size(WIDTH, EQUAL, 60),
                                (results[4] != -1 ? text(std::to_string(results[4]) + " место") : text("")) |
-                                   color(colorPlace) | bold | center})});
+                                   color(colorPlace) | bold | center}),
+                         renderTable()});
         });
 
     std::thread(

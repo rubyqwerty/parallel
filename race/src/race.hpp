@@ -52,6 +52,12 @@ public:
         return results_[number_part_];
     }
 
+    auto GetAllResults()
+    {
+        std::lock_guard lock(mtx_);
+        return results_;
+    }
+
     bool IsFinally() { return number_part_ == 3; }
 
     void UpdatePositions(const int part)
