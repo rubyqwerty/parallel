@@ -7,7 +7,8 @@ add_compile_definitions(SEMAPHORE_NAME="/semaphoreaaaaar")
 add_compile_definitions(CONDITION_VARIABLE_NAME="/condition")
 
 include_directories(shared)
-add_subdirectory(json)
+
+find_package(nlohmann_json REQUIRED)
 
 add_executable(loop src/main.cpp)
 target_link_libraries(loop PRIVATE nlohmann_json::nlohmann_json)
