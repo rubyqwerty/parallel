@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     std::vector<int> places(size);
     int total = 0;
 
-    for (int i : views::iota(1, number_parts + 1))
+    for (auto i : views::iota(1, number_parts + 1))
     {
         std::cout << std::format("Старт машины с id: {}. Этап {}", rank, i) << std::endl;
 
