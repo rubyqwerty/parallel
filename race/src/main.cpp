@@ -59,10 +59,10 @@ int main()
         Elements rows;
         // Заголовки
         Elements header_row;
-        header_row.push_back(text("Этап") | border | center | size(WIDTH, EQUAL, 12));
+        header_row.push_back(text("Этап") | border | center | size(WIDTH, EQUAL, 20));
         for (const auto &header : headers)
         {
-            header_row.push_back(text(header) | border | center | size(WIDTH, EQUAL, 12));
+            header_row.push_back(text(header) | border | center | size(WIDTH, EQUAL, 20));
         }
         rows.push_back(hbox(std::move(header_row)));
 
@@ -71,18 +71,21 @@ int main()
         {
             Elements row;
 
-            if (std::find(results[i].begin(), results[i].end(), -1) != results[i].end())
+            if (std::find_if(results[i].begin(), results[i].end(),
+                             [](const auto result) { return result.first == -1; }) != results[i].end())
                 continue;
 
             row.push_back(text((i != 3 ? "Этап " + std::to_string(i + 1) : "Итог ")) | border | center |
-                          size(WIDTH, EQUAL, 12));
+                          size(WIDTH, EQUAL, 20));
 
             for (size_t j = 0; j < results[i].size(); ++j)
             {
 
-                row.push_back(
-                    text((std::to_string(results[i][j]) != "-1" ? std::to_string(results[i][j]) + " место" : "")) |
-                    border | center | size(WIDTH, EQUAL, 12));
+                row.push_back(text((std::to_string(results[i][j].first) != "-1"
+                                        ? std::to_string(results[i][j].first) +
+                                              " место: " + std::to_string(results[i][j].second) + "мс"
+                                        : "")) |
+                              border | center | size(WIDTH, EQUAL, 20));
             }
             rows.push_back(hbox(std::move(row)));
         }
@@ -101,31 +104,31 @@ int main()
 
             return vbox({hbox({text("Машина 1: ") | color(Color::Blue) | bold | center,
                                gauge(positions[0]) | color(Color::Red) | border | size(WIDTH, EQUAL, 60),
-                               (results[0] != -1 ? text(std::to_string(results[0]) + " место") : text("")) |
+                               (results[0].first != -1 ? text(std::to_string(results[0].first) + " место") : text("")) |
                                    color(colorPlace) | bold | center}),
 
                          hbox({text("Машина 2: ") | color(Color::Blue) | bold | center,
                                gauge(positions[1]) | color(Color::Red) | border | size(WIDTH, EQUAL, 60),
-                               (results[1] != -1 ? text(std::to_string(results[1]) + " место") : text("")) |
+                               (results[1].first != -1 ? text(std::to_string(results[1].first) + " место") : text("")) |
                                    color(colorPlace) | bold | center}),
 
                          hbox({
                              text("Машина 3: ") | color(Color::Blue) | bold | center,
                              gauge(positions[2]) | color(Color::Red) | border | size(WIDTH, EQUAL, 60),
-                             (results[2] != -1 ? text(std::to_string(results[2]) + " место") : text("")) |
+                             (results[2].first != -1 ? text(std::to_string(results[2].first) + " место") : text("")) |
                                  color(colorPlace) | bold | center,
                          }),
 
                          hbox({
                              text("Машина 4: ") | color(Color::Blue) | bold | center,
                              gauge(positions[3]) | color(Color::Red) | border | size(WIDTH, EQUAL, 60),
-                             (results[3] != -1 ? text(std::to_string(results[3]) + " место") : text("")) |
+                             (results[3].first != -1 ? text(std::to_string(results[3].first) + " место") : text("")) |
                                  color(colorPlace) | bold | center,
                          }),
 
                          hbox({text("Машина 5: ") | color(Color::Blue) | bold | center,
                                gauge(positions[4]) | color(Color::Red) | border | size(WIDTH, EQUAL, 60),
-                               (results[4] != -1 ? text(std::to_string(results[4]) + " место") : text("")) |
+                               (results[4].first != -1 ? text(std::to_string(results[4].first) + " место") : text("")) |
                                    color(colorPlace) | bold | center}),
                          renderTable()});
         });

@@ -9,16 +9,17 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <thread>
+#include <utility>
 #include <vector>
 
 using CarsPosition = std::vector<double>;
 
-using PartResults = std::vector<std::vector<int>>;
+using PartResults = std::vector<std::vector<std::pair<int, int>>>;
 
 class Race
 {
 public:
-    Race() : positions_(6, 0), results_(4, std::vector<int>(5, -1)) {}
+    Race() : positions_(6, 0), results_(4, std::vector<std::pair<int, int>>(5, {-1, 0})) {}
 
     ~Race() { thread_.join(); }
 
@@ -46,7 +47,7 @@ public:
                               }};
     }
 
-    std::vector<int> GetResult()
+    std::vector<std::pair<int, int>> GetResult()
     {
         std::lock_guard lock(mtx_);
         return results_[number_part_];
@@ -84,7 +85,12 @@ public:
             if (is_finally)
             {
                 barrier++;
-                results_[part][car_id] = place++;
+
+                double time;
+                updating_car >> time;
+
+                results_[part][car_id].first = place++;
+                results_[part][car_id].second = time;
             }
 
             positions_[car_id] = position;
@@ -98,7 +104,7 @@ public:
         {
             for (int j = 0; j < 3; ++j)
             {
-                cars_score[i].first += results_[j][i];
+                cars_score[i].first += results_[j][i].second;
             }
         }
 
@@ -106,7 +112,7 @@ public:
 
         for (int i = 0; i < 5; ++i)
         {
-            results_[number_part_][cars_score[i].second] = i + 1;
+            results_[number_part_][cars_score[i].second] = std::pair{i + 1, cars_score[i].first};
         }
     }
 
