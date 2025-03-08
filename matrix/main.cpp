@@ -18,16 +18,19 @@ int main(int argc, char **argv)
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    Matrix matrixA;
-    Matrix matrixB(ROW_B * COLUMN_B);
-    Matrix matrixC(ROW_RES * COLUMN_RES);
-
-    std::vector<int> rowA(ROW_A);
+    Matrix matrixA, matrixB, matrixC;
+    std::vector<int> transposedB, result_row(COLUMN_RES), columnB, rowA(ROW_A);
 
     if (rank == ROOT_RANK)
     {
         matrixA = MakeMatrix(ROW_A, COLUMN_A);
         matrixB = MakeMatrix(ROW_B, COLUMN_B);
+        matrixC.assign(ROW_RES * COLUMN_RES, 0);
+        transposedB.assign(ROW_B * COLUMN_B, 0);
+
+        for (int i = 0; i < ROW_B; ++i)
+            for (int j = 0; j < COLUMN_B; ++j)
+                transposedB[j * ROW_B + i] = matrixB[i * COLUMN_B + j];
 
         std::cout << "Матрица А\n";
         Print(matrixA, COLUMN_A);
@@ -37,16 +40,21 @@ int main(int argc, char **argv)
 
     // Рассылаем строки матрицы А
     MPI_Scatter(matrixA.data(), COLUMN_A, MPI_INT, rowA.data(), COLUMN_A, MPI_INT, 0, MPI_COMM_WORLD);
-    // Рассылаем матрицу В
-    MPI_Bcast(matrixB.data(), matrixB.size(), MPI_INT, 0, MPI_COMM_WORLD);
 
     // Расчет результирующей строки
-    std::vector<int> result_row(COLUMN_RES, 0);
+
     for (auto index_res : views::iota(0, COLUMN_B))
     {
+        columnB = rank ? std::vector<int>(COLUMN_B)
+                       : std::vector(transposedB.data() + index_res * ROW_B,
+                                     transposedB.data() + index_res * ROW_B + COLUMN_B);
+
+        // Рассылаем cтроку В
+        MPI_Bcast(columnB.data(), COLUMN_B, MPI_INT, 0, MPI_COMM_WORLD);
+
         for (auto index : views::iota(0, ROW_A))
         {
-            result_row[index_res] += rowA[index] * matrixB[index_res + index * COLUMN_B];
+            result_row[index_res] += rowA[index] * columnB[index];
         }
     }
 

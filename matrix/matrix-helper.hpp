@@ -17,11 +17,13 @@ template <class T> T GetRandom(double mean, double stddev = 20)
 
 inline void Print(const Matrix &matrix, int m)
 {
-    for (auto i : views::iota(0, static_cast<int>(matrix.size())))
+    for (auto row : matrix | views::chunk(m))
     {
-        std::cout << std::setw(3) << matrix[i] << " ";
-        if ((i + 1) % m == 0)
-            std::cout << std::endl;
+        for (auto j : row)
+        {
+            std::cout << std::setw(3) << j << " ";
+        }
+        std::cout << std::endl;
     }
 }
 
