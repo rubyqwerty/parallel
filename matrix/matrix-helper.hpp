@@ -33,7 +33,7 @@ inline auto MakeMatrix(int n, int m)
 
     for (auto i : views::iota(0, n * m))
     {
-        matrix[i] = GetRandom<int>(6, 2);
+        matrix[i] = (i + 1) * 2 / 3 + 1;
     }
 
     return matrix;

@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     Matrix matrixA, matrixB, matrixC;
-    std::vector<int> transposedB, result_row(COLUMN_RES), columnB, rowA(ROW_A);
+    std::vector<int> transposedB, result_row(COLUMN_RES), columnB, rowA(COLUMN_A);
 
     if (rank == ROOT_RANK)
     {
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
         // Рассылаем cтроку В
         MPI_Bcast(columnB.data(), COLUMN_B, MPI_INT, 0, MPI_COMM_WORLD);
 
-        for (auto index : views::iota(0, ROW_A))
+        for (auto index : views::iota(0, COLUMN_A))
         {
             result_row[index_res] += rowA[index] * columnB[index];
         }
