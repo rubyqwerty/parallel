@@ -37,8 +37,6 @@ private:
             std::unique_lock lock(cond_lock_);
             notify_.wait(lock);
 
-            const auto time_start = std::chrono::steady_clock::now();
-
             while (position < distance_)
             {
                 position += speed_;
@@ -48,12 +46,7 @@ private:
                 std::this_thread::sleep_for(std::chrono::milliseconds(20));
             }
 
-            const auto time_end = std::chrono::steady_clock::now();
-
-            const auto result = std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start);
-
-            queue_.send(std::to_string(car_id_) + " " + std::to_string(position) + " 1 " +
-                        std::to_string(result.count()));
+            queue_.send(std::to_string(car_id_) + " " + std::to_string(position) + " 1");
         }
     }
 

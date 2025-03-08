@@ -66,6 +66,8 @@ public:
         int barrier = 0;
         int place = 1;
 
+        const auto time_start = std::chrono::steady_clock::now();
+
         while (barrier != 5)
         {
             std::stringstream updating_car;
@@ -86,11 +88,12 @@ public:
             {
                 barrier++;
 
-                double time;
-                updating_car >> time;
+                const auto time_end = std::chrono::steady_clock::now();
+
+                const auto result = std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start);
 
                 results_[part][car_id].first = place++;
-                results_[part][car_id].second = time;
+                results_[part][car_id].second = result.count();
             }
 
             positions_[car_id] = position;
