@@ -1,0 +1,2 @@
+mpirun --oversubscribe -n 5 ./build/release/virtual/circle 2>/dev/null
+mpirun --oversubscribe -n 5 ./build/release/virtual/line 2>/dev/null

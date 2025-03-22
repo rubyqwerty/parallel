@@ -9,6 +9,7 @@ list(APPEND Modules
     mpi-test
     race-mpi
     matrix
+    virtual
 )
 
 foreach(module ${Modules})
